@@ -15,8 +15,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -130,14 +129,18 @@ public class MainActivity extends FragmentActivity {
 			TextView orderPhone = (TextView) mLayout.findViewById(R.id.orderPhone);
 			TextView createtime = (TextView) mLayout.findViewById(R.id.createtime);
 			TextView orderNote = (TextView) mLayout.findViewById(R.id.orderNote);
+			TextView total = (TextView) mLayout.findViewById(R.id.total);
+			ListView detail = (ListView)mLayout.findViewById(R.id.detail);
 			
-			//System.out.println("ID值是--->>"+orderdata.list.get(position).getID());
+			//System.out.println("ID值是--->>"+orderdata.list.get(position).getID());total
 			String id = String.valueOf(orderdata.list.get(position).getID());
 			ID.setText(id);
 			orderID.setText(orderdata.list.get(position).getOrderID());
 			orderPhone.setText(orderdata.list.get(position).getOrderPhone());
 			createtime.setText(orderdata.list.get(position).getCreatetime());
 			orderNote.setText(orderdata.list.get(position).getOrderNote());
+			total.setText(orderdata.list.get(position).getTotal());
+			detail.setAdapter(new ListAdapter(getApplication(),orderdata.list.get(position).info));
 			((ViewPager) container).addView(mLayout, 0); // 将视图增加到ViewPager
 			return mLayout;
 		}

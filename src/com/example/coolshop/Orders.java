@@ -9,7 +9,7 @@ public class Orders {
 	public String createtime;
 	public String status;
 	public int sid;
-	public double total;
+	public String total;
 	public List<Info> info;
 	public String orderPhone;
 	public String orderNote;
@@ -21,8 +21,8 @@ public class Orders {
 
 	public static class Info {
 		public int goods_id;
-		public double price;
-		public int num;
+		public String price;
+		public String num;
 		public String name;
 
 		public int getGoods_id() {
@@ -33,19 +33,19 @@ public class Orders {
 			this.goods_id = goods_id;
 		}
 
-		public double getPrice() {
+		public String getPrice() {
 			return price;
 		}
 
-		public void setPrice(double price) {
+		public void setPrice(String price) {
 			this.price = price;
 		}
 
-		public int getNum() {
+		public String getNum() {
 			return num;
 		}
 
-		public void setNum(int num) {
+		public void setNum(String num) {
 			this.num = num;
 		}
 
@@ -99,11 +99,11 @@ public class Orders {
 		this.sid = sid;
 	}
 
-	public double getTotal() {
+	public String getTotal() {
 		return total;
 	}
 
-	public void setTotal(double total) {
+	public void setTotal(String total) {
 		this.total = total;
 	}
 
