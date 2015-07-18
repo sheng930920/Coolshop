@@ -58,10 +58,15 @@
             android:layout_width="fill_parent"
             android:layout_height="210.0dip"
             android:layout_gravity="center_horizontal"
-            android:background="#cebdad"
+            android:background="@drawable/bg_login_corner"
             android:orientation="vertical" >
-
-            <EditText
+            <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="210.0dip"
+            android:layout_gravity="center_horizontal"
+            android:background="#00000000"
+            android:orientation="vertical" >
+                <EditText
                 android:id="@+id/name"
                 style="@style/WordStyleDefault_OrderList"
                 android:layout_width="fill_parent"
@@ -85,11 +90,16 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginLeft="20.0dip"
                 android:layout_marginRight="20.0dip"
-                android:layout_marginTop="25.0dip"
+                android:layout_marginTop="50.0dip"
                 android:background="#ffffff"
                 android:cursorVisible="true"
                 android:ems="10"
                 android:inputType="textPassword" />
+                
+                </LinearLayout>
+            
+
+            
         </LinearLayout>
 
         <RelativeLayout
