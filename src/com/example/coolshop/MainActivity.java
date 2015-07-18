@@ -7,6 +7,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
+import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -16,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -132,6 +137,23 @@ public class MainActivity extends FragmentActivity {
 			TextView total = (TextView) mLayout.findViewById(R.id.total);
 			ListView detail = (ListView)mLayout.findViewById(R.id.detail);
 			
+			PullToRefreshScrollView mPullScrollView= (PullToRefreshScrollView)mLayout.findViewById(R.id.mPullScrollView); 
+			mPullScrollView.setOnRefreshListener(new OnRefreshListener<ScrollView>() {  
+				  
+	            @Override  
+	            public void onRefresh(PullToRefreshBase<ScrollView> refreshView) {  
+	               // new GetDataTask().execute();  
+	            	//mPullScrollView.onRefreshComplete(); 
+	            Toast.makeText(MainActivity.this, "下拉啦", 4000).show();
+	            }  
+	        });  
+			
+			
+			
+			
+			
+			
+			
 			//System.out.println("ID值是--->>"+orderdata.list.get(position).getID());total
 			String id = String.valueOf(orderdata.list.get(position).getID());
 			ID.setText(id);
@@ -141,6 +163,9 @@ public class MainActivity extends FragmentActivity {
 			orderNote.setText(orderdata.list.get(position).getOrderNote());
 			total.setText(orderdata.list.get(position).getTotal());
 			detail.setAdapter(new ListAdapter(getApplication(),orderdata.list.get(position).info));
+			
+			
+			
 			((ViewPager) container).addView(mLayout, 0); // 将视图增加到ViewPager
 			return mLayout;
 		}
