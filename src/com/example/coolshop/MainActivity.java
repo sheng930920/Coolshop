@@ -1,11 +1,15 @@
 package com.example.coolshop;
 
+import java.io.IOException;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
@@ -29,6 +33,8 @@ public class MainActivity extends FragmentActivity {
 	private ViewPager mPager;
 	private Myapplication app;
 	OrderData orderdata;
+	private int uid;
+	private String token;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +48,7 @@ public class MainActivity extends FragmentActivity {
 		app = (Myapplication) getApplication();
 		new GetJson().execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
 		mPager = (ViewPager) findViewById(R.id.viewpager);
-		
+
 	}
 
 	class GetJson extends AsyncTask<String, String, String> {
@@ -64,8 +70,8 @@ public class MainActivity extends FragmentActivity {
 	 * 访问服务器获取Json数据
 	 */
 	public String getJSONFromServer(String url) {
-		int uid = app.getID();
-		String token = app.getToken();
+		 uid = app.getID();
+		 token = app.getToken();
 		String Url = url + "&uid=" + uid + "&token=" + token;
 		String temp = "";
 		HttpClient httpClient = new DefaultHttpClient();
@@ -127,34 +133,46 @@ public class MainActivity extends FragmentActivity {
 
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) {
-			View mLayout = inflater.inflate(R.layout.detail, container,false);
-			
+			View mLayout = inflater.inflate(R.layout.detail, container, false);
+
 			TextView ID = (TextView) mLayout.findViewById(R.id.ID);
 			TextView orderID = (TextView) mLayout.findViewById(R.id.orderID);
-			TextView orderPhone = (TextView) mLayout.findViewById(R.id.orderPhone);
-			TextView createtime = (TextView) mLayout.findViewById(R.id.createtime);
-			TextView orderNote = (TextView) mLayout.findViewById(R.id.orderNote);
+			TextView orderPhone = (TextView) mLayout
+					.findViewById(R.id.orderPhone);
+			TextView createtime = (TextView) mLayout
+					.findViewById(R.id.createtime);
+			TextView orderNote = (TextView) mLayout
+					.findViewById(R.id.orderNote);
 			TextView total = (TextView) mLayout.findViewById(R.id.total);
-			ListView detail = (ListView)mLayout.findViewById(R.id.detail);
+			ListView detail = (ListView) mLayout.findViewById(R.id.detail);
+
+			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout
+					.findViewById(R.id.mPullScrollView);
 			
-			PullToRefreshScrollView mPullScrollView= (PullToRefreshScrollView)mLayout.findViewById(R.id.mPullScrollView); 
-			mPullScrollView.setOnRefreshListener(new OnRefreshListener<ScrollView>() {  
-				  
-	            @Override  
-	            public void onRefresh(PullToRefreshBase<ScrollView> refreshView) {  
-	               // new GetDataTask().execute();  
-	            	//mPullScrollView.onRefreshComplete(); 
-	            Toast.makeText(MainActivity.this, "下拉啦", 4000).show();
-	            }  
-	        });  
+			final int iD = orderdata.list.get(position).getID();
+			final String phoneNum = orderdata.list.get(position).getOrderPhone();
 			
-			
-			
-			
-			
-			
-			
-			//System.out.println("ID值是--->>"+orderdata.list.get(position).getID());total
+			mPullScrollView.setOnRefreshListener(new OnRefreshListener<ScrollView>() {
+
+						@Override
+						public void onRefresh(
+								PullToRefreshBase<ScrollView> refreshView) {
+							// mPullScrollView.onRefreshComplete();
+							if (PullToRefreshBase.Mode.PULL_FROM_START == mPullScrollView
+									.getCurrentMode()) {
+			String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=set_order&uid="+uid+"&token="+token+"&id="+iD+"&phone="+phoneNum;
+								new ChangeOrder(mPullScrollView).execute(Url);
+								
+							} else if (PullToRefreshBase.Mode.PULL_FROM_END == mPullScrollView
+									.getCurrentMode()) {
+								Toast.makeText(MainActivity.this, "上拉啦", 4000)
+										.show();
+							}
+
+						}
+					});
+
+			// System.out.println("ID值是--->>"+orderdata.list.get(position).getID());total
 			String id = String.valueOf(orderdata.list.get(position).getID());
 			ID.setText(id);
 			orderID.setText(orderdata.list.get(position).getOrderID());
@@ -162,10 +180,9 @@ public class MainActivity extends FragmentActivity {
 			createtime.setText(orderdata.list.get(position).getCreatetime());
 			orderNote.setText(orderdata.list.get(position).getOrderNote());
 			total.setText(orderdata.list.get(position).getTotal());
-			detail.setAdapter(new ListAdapter(getApplication(),orderdata.list.get(position).info));
-			
-			
-			
+			detail.setAdapter(new ListAdapter(getApplication(), orderdata.list
+					.get(position).info));
+
 			((ViewPager) container).addView(mLayout, 0); // 将视图增加到ViewPager
 			return mLayout;
 		}
@@ -174,6 +191,53 @@ public class MainActivity extends FragmentActivity {
 		public boolean isViewFromObject(View arg0, Object arg1) {
 			// TODO Auto-generated method stub
 			return arg0 == arg1;
+		}
+
+	}
+
+	private class ChangeOrder extends AsyncTask<String, Void, String> {
+		
+		PullToRefreshScrollView mPullScrollView;
+		public ChangeOrder(PullToRefreshScrollView mPullScrollView){
+			this.mPullScrollView = mPullScrollView;
+		}
+		
+		@Override
+		protected String doInBackground(String... arg0) {
+			String ret = "";
+			HttpClient httpClient = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(arg0[0]);
+			HttpResponse response;
+			try {
+				response = httpClient.execute(httpget);
+				int res = response.getStatusLine().getStatusCode();
+				if(res == 200){
+					HttpEntity entity = response.getEntity();
+					if (entity != null) {
+						String Result = EntityUtils.toString(entity,"utf8");
+						System.out.println("Result-->>"+Result);
+						JSONObject json = new JSONObject(Result);
+						ret = json.getString("ret");
+						return ret;
+					}
+				}else{
+					Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT).show();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			return ret;
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+
+			if(result.equals("success")){
+				mPullScrollView.onRefreshComplete();
+				Toast.makeText(MainActivity.this, "订单已确认", 4000).show();
+			}
+			super.onPostExecute(result);
 		}
 
 	}
