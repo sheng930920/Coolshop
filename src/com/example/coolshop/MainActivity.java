@@ -32,7 +32,7 @@ public class MainActivity extends FragmentActivity {
 
 	private ViewPager mPager;
 	private Myapplication app;
-	OrderData orderdata;
+	private OrderData orderdata;
 	private int uid;
 	private String token;
 
@@ -70,8 +70,8 @@ public class MainActivity extends FragmentActivity {
 	 * 访问服务器获取Json数据
 	 */
 	public String getJSONFromServer(String url) {
-		 uid = app.getID();
-		 token = app.getToken();
+		uid = app.getID();
+		token = app.getToken();
 		String Url = url + "&uid=" + uid + "&token=" + token;
 		String temp = "";
 		HttpClient httpClient = new DefaultHttpClient();
@@ -92,8 +92,7 @@ public class MainActivity extends FragmentActivity {
 
 				}
 			} else {
-				Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT)
-						.show();
+				Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT).show();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -110,7 +109,10 @@ public class MainActivity extends FragmentActivity {
 		mPager.setAdapter(new Myadapter(orderdata));
 		mPager.setCurrentItem(0);
 	}
-
+	
+	/**
+	 * Viewpager适配器
+	 */
 	public class Myadapter extends PagerAdapter {
 
 		private LayoutInflater inflater;
@@ -137,38 +139,46 @@ public class MainActivity extends FragmentActivity {
 
 			TextView ID = (TextView) mLayout.findViewById(R.id.ID);
 			TextView orderID = (TextView) mLayout.findViewById(R.id.orderID);
-			TextView orderPhone = (TextView) mLayout
-					.findViewById(R.id.orderPhone);
-			TextView createtime = (TextView) mLayout
-					.findViewById(R.id.createtime);
-			TextView orderNote = (TextView) mLayout
-					.findViewById(R.id.orderNote);
+			TextView orderPhone = (TextView) mLayout.findViewById(R.id.orderPhone);
+			TextView createtime = (TextView) mLayout.findViewById(R.id.createtime);
+			TextView orderNote = (TextView) mLayout.findViewById(R.id.orderNote);
 			TextView total = (TextView) mLayout.findViewById(R.id.total);
 			ListView detail = (ListView) mLayout.findViewById(R.id.detail);
 
-			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout
-					.findViewById(R.id.mPullScrollView);
-			
+			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout.findViewById(R.id.mPullScrollView);
+
 			final int iD = orderdata.list.get(position).getID();
 			final String phoneNum = orderdata.list.get(position).getOrderPhone();
-			
+
 			mPullScrollView.setOnRefreshListener(new OnRefreshListener<ScrollView>() {
 
 						@Override
-						public void onRefresh(
-								PullToRefreshBase<ScrollView> refreshView) {
-							// mPullScrollView.onRefreshComplete();
-							if (PullToRefreshBase.Mode.PULL_FROM_START == mPullScrollView
-									.getCurrentMode()) {
-			String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=set_order&uid="+uid+"&token="+token+"&id="+iD+"&phone="+phoneNum;
-								new ChangeOrder(mPullScrollView).execute(Url);
-								
-							} else if (PullToRefreshBase.Mode.PULL_FROM_END == mPullScrollView
-									.getCurrentMode()) {
-								Toast.makeText(MainActivity.this, "上拉啦", 4000)
-										.show();
-							}
+						public void onRefresh(PullToRefreshBase<ScrollView> refreshView) {
+							//下拉确认订单
+							if (PullToRefreshBase.Mode.PULL_FROM_START == mPullScrollView.getCurrentMode()) {
 
+								String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=set_order&uid="
+										+ uid
+										+ "&token="
+										+ token
+										+ "&id="
+										+ iD
+										+ "&phone=" + phoneNum;
+								String result = "订单已确认!";
+
+								new ChangeOrder(mPullScrollView,MainActivity.this, result).execute(Url);
+
+							} else if (PullToRefreshBase.Mode.PULL_FROM_END == mPullScrollView.getCurrentMode()) {
+								//上拉删除订单
+								String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=delete_order&uid="
+										+ uid
+										+ "&token="
+										+ token
+										+ "&id="
+										+ iD;
+								String result = "订单已删除!";
+								new ChangeOrder(mPullScrollView,MainActivity.this, result).execute(Url);
+							}
 						}
 					});
 
@@ -191,53 +201,6 @@ public class MainActivity extends FragmentActivity {
 		public boolean isViewFromObject(View arg0, Object arg1) {
 			// TODO Auto-generated method stub
 			return arg0 == arg1;
-		}
-
-	}
-
-	private class ChangeOrder extends AsyncTask<String, Void, String> {
-		
-		PullToRefreshScrollView mPullScrollView;
-		public ChangeOrder(PullToRefreshScrollView mPullScrollView){
-			this.mPullScrollView = mPullScrollView;
-		}
-		
-		@Override
-		protected String doInBackground(String... arg0) {
-			String ret = "";
-			HttpClient httpClient = new DefaultHttpClient();
-			HttpGet httpget = new HttpGet(arg0[0]);
-			HttpResponse response;
-			try {
-				response = httpClient.execute(httpget);
-				int res = response.getStatusLine().getStatusCode();
-				if(res == 200){
-					HttpEntity entity = response.getEntity();
-					if (entity != null) {
-						String Result = EntityUtils.toString(entity,"utf8");
-						System.out.println("Result-->>"+Result);
-						JSONObject json = new JSONObject(Result);
-						ret = json.getString("ret");
-						return ret;
-					}
-				}else{
-					Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT).show();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			
-			return ret;
-		}
-
-		@Override
-		protected void onPostExecute(String result) {
-
-			if(result.equals("success")){
-				mPullScrollView.onRefreshComplete();
-				Toast.makeText(MainActivity.this, "订单已确认", 4000).show();
-			}
-			super.onPostExecute(result);
 		}
 
 	}
