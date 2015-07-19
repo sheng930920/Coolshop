@@ -1,32 +1,31 @@
 package com.example.coolshop;
 
-import java.io.IOException;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
-
-import com.handmark.pulltorefresh.library.PullToRefreshBase;
-import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
-import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
-
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
+import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
 
 public class MainActivity extends FragmentActivity {
 
@@ -46,8 +45,39 @@ public class MainActivity extends FragmentActivity {
 
 	private void init() {
 		app = (Myapplication) getApplication();
-		new GetJson().execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
+		new GetJson()
+				.execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
 		mPager = (ViewPager) findViewById(R.id.viewpager);
+
+	}
+
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			final AlertDialog dialog = new AlertDialog.Builder(this).create();
+			dialog.show();
+			Window window = dialog.getWindow();
+			window.setContentView(R.layout.dialog);
+			
+			TextView no = (TextView)window.findViewById(R.id.no);
+			no.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					dialog.cancel();
+				}
+			});
+			TextView ok = (TextView)window.findViewById(R.id.ok);
+			ok.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					System.exit(0);
+				}
+			});
+			
+		}
+		return false;
 
 	}
 
@@ -92,7 +122,8 @@ public class MainActivity extends FragmentActivity {
 
 				}
 			} else {
-				Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT)
+						.show();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -109,7 +140,7 @@ public class MainActivity extends FragmentActivity {
 		mPager.setAdapter(new Myadapter(orderdata));
 		mPager.setCurrentItem(0);
 	}
-	
+
 	/**
 	 * Viewpager适配器
 	 */
@@ -139,13 +170,17 @@ public class MainActivity extends FragmentActivity {
 
 			TextView ID = (TextView) mLayout.findViewById(R.id.ID);
 			TextView orderID = (TextView) mLayout.findViewById(R.id.orderID);
-			TextView orderPhone = (TextView) mLayout.findViewById(R.id.orderPhone);
-			TextView createtime = (TextView) mLayout.findViewById(R.id.createtime);
-			TextView orderNote = (TextView) mLayout.findViewById(R.id.orderNote);
+			TextView orderPhone = (TextView) mLayout
+					.findViewById(R.id.orderPhone);
+			TextView createtime = (TextView) mLayout
+					.findViewById(R.id.createtime);
+			TextView orderNote = (TextView) mLayout
+					.findViewById(R.id.orderNote);
 			TextView total = (TextView) mLayout.findViewById(R.id.total);
 			ListView detail = (ListView) mLayout.findViewById(R.id.detail);
 
-			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout.findViewById(R.id.mPullScrollView);
+			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout
+					.findViewById(R.id.mPullScrollView);
 
 			final int iD = orderdata.list.get(position).getID();
 			final String phoneNum = orderdata.list.get(position).getOrderPhone();
@@ -154,7 +189,7 @@ public class MainActivity extends FragmentActivity {
 
 						@Override
 						public void onRefresh(PullToRefreshBase<ScrollView> refreshView) {
-							//下拉确认订单
+							// 下拉确认订单
 							if (PullToRefreshBase.Mode.PULL_FROM_START == mPullScrollView.getCurrentMode()) {
 
 								String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=set_order&uid="
@@ -169,13 +204,9 @@ public class MainActivity extends FragmentActivity {
 								new ChangeOrder(mPullScrollView,MainActivity.this, result).execute(Url);
 
 							} else if (PullToRefreshBase.Mode.PULL_FROM_END == mPullScrollView.getCurrentMode()) {
-								//上拉删除订单
+								// 上拉删除订单
 								String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=delete_order&uid="
-										+ uid
-										+ "&token="
-										+ token
-										+ "&id="
-										+ iD;
+										+ uid + "&token=" + token + "&id=" + iD;
 								String result = "订单已删除!";
 								new ChangeOrder(mPullScrollView,MainActivity.this, result).execute(Url);
 							}
@@ -190,8 +221,7 @@ public class MainActivity extends FragmentActivity {
 			createtime.setText(orderdata.list.get(position).getCreatetime());
 			orderNote.setText(orderdata.list.get(position).getOrderNote());
 			total.setText(orderdata.list.get(position).getTotal());
-			detail.setAdapter(new ListAdapter(getApplication(), orderdata.list
-					.get(position).info));
+			detail.setAdapter(new ListAdapter(getApplication(), orderdata.list.get(position).info));
 
 			((ViewPager) container).addView(mLayout, 0); // 将视图增加到ViewPager
 			return mLayout;

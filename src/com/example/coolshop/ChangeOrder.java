@@ -13,15 +13,16 @@ import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
-
+/**
+ * 上下拉处理订单事件
+ */
 public class ChangeOrder extends AsyncTask<String, Void, String> {
 
 	private PullToRefreshScrollView mPullScrollView;
 	private Context mcontext;
 	private String Result;
 
-	public ChangeOrder(PullToRefreshScrollView mPullScrollView,
-			Context mcontext, String Result) {
+	public ChangeOrder(PullToRefreshScrollView mPullScrollView,Context mcontext, String Result) {
 		this.mPullScrollView = mPullScrollView;
 		this.mcontext = mcontext;
 		this.Result = Result;
@@ -46,8 +47,7 @@ public class ChangeOrder extends AsyncTask<String, Void, String> {
 					return ret;
 				}
 			} else {
-				// Toast.makeText(mcontext, "响应不通过！",
-				// Toast.LENGTH_SHORT).show();
+				// Toast.makeText(mcontext, "响应不通过！",Toast.LENGTH_SHORT).show();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
