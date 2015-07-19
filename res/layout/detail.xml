@@ -451,7 +451,6 @@
                         android:layout_width="fill_parent"
                         android:layout_height="fill_parent"
                         android:divider="@drawable/img_table_order_line"
-                        android:listSelector="@drawable/btn_grey_down"
                         android:scrollbars="none" />
                 </FrameLayout>
             </RelativeLayout>

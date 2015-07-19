@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
-    
     android:gravity="center"
     android:orientation="vertical" >
 
@@ -23,7 +22,7 @@
             android:gravity="center"
             android:padding="10dp"
             android:text="是否退出应用？"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="#ff000000"
             android:textSize="18sp" />
 
         <TextView
@@ -46,7 +45,7 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="取消"
-                android:textColor="#0048fc"
+                android:textColor="#ff000000"
                 android:textSize="18sp" />
 
             <TextView
@@ -63,7 +62,7 @@
                 android:gravity="center"
                 android:padding="10dp"
                 android:text="确定"
-                android:textColor="#0048fc"
+                android:textColor="#ff000000"
                 android:textSize="18sp" />
         </LinearLayout>
     </LinearLayout>
