@@ -35,20 +35,26 @@ public class MainActivity extends FragmentActivity {
 	private OrderData orderdata;
 	private int uid;
 	private String token;
+	Myadapter myadapter;
+	public String mjson;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		init();
-
 	}
 
 	private void init() {
-		app = (Myapplication) getApplication();
-		new GetJson().execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
+		app = (Myapplication) getApplication();		
 		mPager = (ViewPager) findViewById(R.id.viewpager);
-
+		new GetJson().execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
+		System.out.println("json-->>"+mjson);
+//		orderdata = new OrderData(mjson);	
+//		myadapter = new Myadapter(orderdata);
+//		mPager.setAdapter(myadapter);
+//		mPager.setCurrentItem(0);
+//		
 	}
 
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -62,8 +68,8 @@ public class MainActivity extends FragmentActivity {
                     public void onClick(DialogInterface dialog, int which) { 
                     	dialog.cancel();
                     } 
-                }). 
-                setNegativeButton("确认", new DialogInterface.OnClickListener() { 
+                })
+                .setNegativeButton("确认", new DialogInterface.OnClickListener() { 
                     @Override 
                     public void onClick(DialogInterface dialog, int which) { 
                        System.exit(0);
@@ -75,8 +81,8 @@ public class MainActivity extends FragmentActivity {
 		return false;
 	}
 
-	class GetJson extends AsyncTask<String, String, String> {
-
+	class GetJson extends AsyncTask<String, Void, String> {
+		
 		@Override
 		protected String doInBackground(String... params) {
 
@@ -85,6 +91,7 @@ public class MainActivity extends FragmentActivity {
 
 		@Override
 		protected void onPostExecute(String result) {
+			mjson = result;
 			DisplayJson(result);
 		}
 
@@ -111,13 +118,11 @@ public class MainActivity extends FragmentActivity {
 					int start = Result.indexOf("[{");
 					int stop = Result.lastIndexOf("}]");
 					temp = Result.substring(start, stop + 2);
-					System.out.println("Json是-->>>" + temp);
+					//System.out.println("Json是-->>>" + temp);
 					return temp;
-
 				}
 			} else {
-				Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT)
-						.show();
+				Toast.makeText(getApplication(), "响应不通过！", Toast.LENGTH_SHORT).show();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -130,9 +135,10 @@ public class MainActivity extends FragmentActivity {
 	 */
 
 	public void DisplayJson(String jsonstring) {
-		orderdata = new OrderData(jsonstring);
-		mPager.setAdapter(new Myadapter(orderdata));
-		mPager.setCurrentItem(0);
+		orderdata = new OrderData(jsonstring);	
+		myadapter = new Myadapter(orderdata);
+		mPager.setAdapter(myadapter);
+    	mPager.setCurrentItem(0);
 	}
 
 	/**
