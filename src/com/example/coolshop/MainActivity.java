@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -45,8 +46,7 @@ public class MainActivity extends FragmentActivity {
 
 	private void init() {
 		app = (Myapplication) getApplication();
-		new GetJson()
-				.execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
+		new GetJson().execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
 		mPager = (ViewPager) findViewById(R.id.viewpager);
 
 	}
@@ -54,31 +54,25 @@ public class MainActivity extends FragmentActivity {
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			final AlertDialog dialog = new AlertDialog.Builder(this).create();
-			dialog.show();
-			Window window = dialog.getWindow();
-			window.setContentView(R.layout.dialog);
 			
-			TextView no = (TextView)window.findViewById(R.id.no);
-			no.setOnClickListener(new View.OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					dialog.cancel();
-				}
-			});
-			TextView ok = (TextView)window.findViewById(R.id.ok);
-			ok.setOnClickListener(new View.OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					System.exit(0);
-				}
-			});
+			 Builder dialog = new AlertDialog.Builder(this)
+			 . setMessage("是否退出应用？")
+			 .setPositiveButton("取消", new DialogInterface.OnClickListener() { 
+                    @Override 
+                    public void onClick(DialogInterface dialog, int which) { 
+                    	dialog.cancel();
+                    } 
+                }). 
+                setNegativeButton("确认", new DialogInterface.OnClickListener() { 
+                    @Override 
+                    public void onClick(DialogInterface dialog, int which) { 
+                       System.exit(0);
+                    } 
+                });
+			 dialog.show();
 			
 		}
 		return false;
-
 	}
 
 	class GetJson extends AsyncTask<String, String, String> {
@@ -179,12 +173,11 @@ public class MainActivity extends FragmentActivity {
 			TextView total = (TextView) mLayout.findViewById(R.id.total);
 			ListView detail = (ListView) mLayout.findViewById(R.id.detail);
 
-			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout
-					.findViewById(R.id.mPullScrollView);
+			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout.findViewById(R.id.mPullScrollView);
 
 			final int iD = orderdata.list.get(position).getID();
 			final String phoneNum = orderdata.list.get(position).getOrderPhone();
-
+			
 			mPullScrollView.setOnRefreshListener(new OnRefreshListener<ScrollView>() {
 
 						@Override
@@ -208,6 +201,7 @@ public class MainActivity extends FragmentActivity {
 								String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=delete_order&uid="
 										+ uid + "&token=" + token + "&id=" + iD;
 								String result = "订单已删除!";
+								
 								new ChangeOrder(mPullScrollView,MainActivity.this, result).execute(Url);
 							}
 						}

@@ -26,7 +26,7 @@ public class OrderData {
 		
 		for (Iterator iterator = users.iterator(); iterator.hasNext();) {
 			Orders orders = (Orders) iterator.next();
-			System.out.println("ID-->>"+orders.getID()+"orderPhone-->"+orders.getOrderPhone());
+			System.out.println("ID-->>"+orders.getID()+"   orderPhone-->"+orders.getOrderPhone());
 			list.add(orders);
 		}
 	}
