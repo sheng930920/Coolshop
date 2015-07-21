@@ -1,5 +1,8 @@
 package com.example.coolshop;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -12,6 +15,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -27,6 +32,11 @@ import android.widget.Toast;
 import com.handmark.pulltorefresh.library.PullToRefreshBase;
 import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener;
 import com.handmark.pulltorefresh.library.PullToRefreshScrollView;
+import com.lidroid.xutils.HttpUtils;
+import com.lidroid.xutils.exception.HttpException;
+import com.lidroid.xutils.http.ResponseInfo;
+import com.lidroid.xutils.http.callback.RequestCallBack;
+import com.lidroid.xutils.http.client.HttpRequest;
 
 public class MainActivity extends FragmentActivity {
 
@@ -35,52 +45,36 @@ public class MainActivity extends FragmentActivity {
 	private OrderData orderdata;
 	private int uid;
 	private String token;
-	Myadapter myadapter;
-	public String mjson;
-
+	private Myadapter myadapter;
+	
+	private String jsonstring;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		timer.schedule(task,0,5000);
 		init();
 	}
 
 	private void init() {
 		app = (Myapplication) getApplication();		
+		uid = app.getID();
+		token = app.getToken();
 		mPager = (ViewPager) findViewById(R.id.viewpager);
 		new GetJson().execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
-		System.out.println("json-->>"+mjson);
-//		orderdata = new OrderData(mjson);	
-//		myadapter = new Myadapter(orderdata);
-//		mPager.setAdapter(myadapter);
-//		mPager.setCurrentItem(0);
-//		
 	}
-
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			
-			 Builder dialog = new AlertDialog.Builder(this)
-			 . setMessage("是否退出应用？")
-			 .setPositiveButton("取消", new DialogInterface.OnClickListener() { 
-                    @Override 
-                    public void onClick(DialogInterface dialog, int which) { 
-                    	dialog.cancel();
-                    } 
-                })
-                .setNegativeButton("确认", new DialogInterface.OnClickListener() { 
-                    @Override 
-                    public void onClick(DialogInterface dialog, int which) { 
-                       System.exit(0);
-                    } 
-                });
-			 dialog.show();
-			
+	
+	Timer timer = new Timer( );
+	TimerTask task = new TimerTask( ) {
+		public void run ( ) {
+			new GetJson().execute("http://shop.coolpoint.cc/admin/api/get/?ac=get_order");
 		}
-		return false;
-	}
-
+	};
+	
+	/**
+	 *异步访问网络
+	 */
 	class GetJson extends AsyncTask<String, Void, String> {
 		
 		@Override
@@ -91,7 +85,9 @@ public class MainActivity extends FragmentActivity {
 
 		@Override
 		protected void onPostExecute(String result) {
-			mjson = result;
+			
+			System.out.println("result是-->>>" + result);
+			jsonstring = result;
 			DisplayJson(result);
 		}
 
@@ -101,8 +97,7 @@ public class MainActivity extends FragmentActivity {
 	 * 访问服务器获取Json数据
 	 */
 	public String getJSONFromServer(String url) {
-		uid = app.getID();
-		token = app.getToken();
+		
 		String Url = url + "&uid=" + uid + "&token=" + token;
 		String temp = "";
 		HttpClient httpClient = new DefaultHttpClient();
@@ -136,103 +131,33 @@ public class MainActivity extends FragmentActivity {
 
 	public void DisplayJson(String jsonstring) {
 		orderdata = new OrderData(jsonstring);	
-		myadapter = new Myadapter(orderdata);
+		myadapter = new Myadapter(MainActivity.this,orderdata);
 		mPager.setAdapter(myadapter);
     	mPager.setCurrentItem(0);
 	}
-
+	
 	/**
-	 * Viewpager适配器
+	 * 返回键响应事件
 	 */
-	public class Myadapter extends PagerAdapter {
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
 
-		private LayoutInflater inflater;
-		OrderData orderdata;
-
-		public Myadapter(OrderData orderdata) {
-			inflater = getLayoutInflater();
-			this.orderdata = orderdata;
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			 Builder dialog = new AlertDialog.Builder(this). setMessage("是否退出应用？")
+			 .setPositiveButton("取消", new DialogInterface.OnClickListener() { 
+                    @Override 
+                    public void onClick(DialogInterface dialog, int which) { 
+                    	dialog.cancel();
+                    } 
+                })
+                .setNegativeButton("确认", new DialogInterface.OnClickListener() { 
+                    @Override 
+                    public void onClick(DialogInterface dialog, int which) { 
+                       System.exit(0);
+                    } 
+                });
+			 dialog.show();
 		}
-
-		@Override
-		public int getCount() {
-			return orderdata.list.size();
-		}
-
-		@Override
-		public void destroyItem(View container, int position, Object object) {
-			((ViewPager) container).removeView((View) object);
-		}
-
-		@Override
-		public Object instantiateItem(ViewGroup container, int position) {
-			View mLayout = inflater.inflate(R.layout.detail, container, false);
-
-			TextView ID = (TextView) mLayout.findViewById(R.id.ID);
-			TextView orderID = (TextView) mLayout.findViewById(R.id.orderID);
-			TextView orderPhone = (TextView) mLayout
-					.findViewById(R.id.orderPhone);
-			TextView createtime = (TextView) mLayout
-					.findViewById(R.id.createtime);
-			TextView orderNote = (TextView) mLayout
-					.findViewById(R.id.orderNote);
-			TextView total = (TextView) mLayout.findViewById(R.id.total);
-			ListView detail = (ListView) mLayout.findViewById(R.id.detail);
-
-			final PullToRefreshScrollView mPullScrollView = (PullToRefreshScrollView) mLayout.findViewById(R.id.mPullScrollView);
-
-			final int iD = orderdata.list.get(position).getID();
-			final String phoneNum = orderdata.list.get(position).getOrderPhone();
-			
-			mPullScrollView.setOnRefreshListener(new OnRefreshListener<ScrollView>() {
-
-						@Override
-						public void onRefresh(PullToRefreshBase<ScrollView> refreshView) {
-							// 下拉确认订单
-							if (PullToRefreshBase.Mode.PULL_FROM_START == mPullScrollView.getCurrentMode()) {
-
-								String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=set_order&uid="
-										+ uid
-										+ "&token="
-										+ token
-										+ "&id="
-										+ iD
-										+ "&phone=" + phoneNum;
-								String result = "订单已确认!";
-
-								new ChangeOrder(mPullScrollView,MainActivity.this, result).execute(Url);
-
-							} else if (PullToRefreshBase.Mode.PULL_FROM_END == mPullScrollView.getCurrentMode()) {
-								// 上拉删除订单
-								String Url = "http://shop.coolpoint.cc/admin/api/get/?ac=delete_order&uid="
-										+ uid + "&token=" + token + "&id=" + iD;
-								String result = "订单已删除!";
-								
-								new ChangeOrder(mPullScrollView,MainActivity.this, result).execute(Url);
-							}
-						}
-					});
-
-			// System.out.println("ID值是--->>"+orderdata.list.get(position).getID());total
-			String id = String.valueOf(orderdata.list.get(position).getID());
-			ID.setText(id);
-			orderID.setText(orderdata.list.get(position).getOrderID());
-			orderPhone.setText(orderdata.list.get(position).getOrderPhone());
-			createtime.setText(orderdata.list.get(position).getCreatetime());
-			orderNote.setText(orderdata.list.get(position).getOrderNote());
-			total.setText(orderdata.list.get(position).getTotal());
-			detail.setAdapter(new ListAdapter(getApplication(), orderdata.list.get(position).info));
-
-			((ViewPager) container).addView(mLayout, 0); // 将视图增加到ViewPager
-			return mLayout;
-		}
-
-		@Override
-		public boolean isViewFromObject(View arg0, Object arg1) {
-			// TODO Auto-generated method stub
-			return arg0 == arg1;
-		}
-
+		return false;
 	}
 
 }

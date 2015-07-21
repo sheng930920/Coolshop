@@ -14,7 +14,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
 /**
- * 上下拉处理订单事件
+ * 上下拉订单处理事件
  */
 public class ChangeOrder extends AsyncTask<String, Void, String> {
 
@@ -47,7 +47,7 @@ public class ChangeOrder extends AsyncTask<String, Void, String> {
 					return ret;
 				}
 			} else {
-				// Toast.makeText(mcontext, "响应不通过！",Toast.LENGTH_SHORT).show();
+				Toast.makeText(mcontext, "响应不通过！",Toast.LENGTH_SHORT).show();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

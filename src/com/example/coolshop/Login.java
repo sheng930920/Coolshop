@@ -1,24 +1,16 @@
 package com.example.coolshop;
 
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
-
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -54,15 +46,13 @@ public class Login extends Activity {
 		tv_name = (EditText) findViewById(R.id.name);
 		tv_password = (EditText) findViewById(R.id.password);
 		btn_login = (Button) findViewById(R.id.login);
-		
 		LoadUserDate();
 		
 		btn_login.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				new LoginTask()
-						.execute("http://shop.coolpoint.cc/admin/api/get/?ac=login");
+				new LoginTask().execute("http://shop.coolpoint.cc/admin/api/get/?ac=login");
 			}
 		});
 	}
@@ -98,7 +88,21 @@ public class Login extends Activity {
 		spEd.commit();
 	}
 
-	class LoginTask extends AsyncTask<String, String, String> {
+	class LoginTask extends AsyncTask<String, Integer, String> {
+		
+		ProgressDialog proDialog;
+
+		@Override
+		protected void onPreExecute() {
+			proDialog = new ProgressDialog(Login.this);
+			super.onPreExecute();
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			proDialog.show();
+			super.onProgressUpdate(values);
+		}
 
 		protected String doInBackground(String... params) {
 
@@ -108,6 +112,7 @@ public class Login extends Activity {
 		protected void onPostExecute(String result) {
 			if (result.equals("success")) {
 				SaveUserDate();
+				proDialog.dismiss();
 				Intent intent = new Intent(Login.this, MainActivity.class);
 				startActivity(intent); // 跳转到成功页面
 				Login.this.finish();
@@ -123,8 +128,8 @@ public class Login extends Activity {
 		String temp = tv_password.getText().toString();
 		String password = GetMD5Code("coolpoint2015@#$!" + temp);
 		String Url = url + "&uname=" + name + "&upassword=" + password;
-		System.out.println("Url-->>" + Url);
-		System.out.println("密码-->>" + password);
+		//System.out.println("Url-->>" + Url);
+		//System.out.println("密码-->>" + password);
 
 		HttpClient httpClient = new DefaultHttpClient();
 		HttpGet httpget = new HttpGet(Url);
@@ -136,15 +141,15 @@ public class Login extends Activity {
 				HttpEntity entity = response.getEntity();
 				if (entity != null) {
 					String Result = EntityUtils.toString(entity, "utf8");
-					System.out.println("Result-->>" + Result);
+					//System.out.println("Result-->>" + Result);
 					JSONObject json = new JSONObject(Result);
 					ret = json.getString("ret");
 					String status = json.getString("status");
 					JSONObject data = json.getJSONObject("data");
 					app.setID(data.getInt("ID"));
 					app.setToken(data.getString("token"));
-					System.out.println("ID-->>" + data.getInt("ID"));
-					System.out.println("token-->>" + data.getString("token"));
+					//System.out.println("ID-->>" + data.getInt("ID"));
+					//System.out.println("token-->>" + data.getString("token"));
 					return ret;
 				}
 			} else {
