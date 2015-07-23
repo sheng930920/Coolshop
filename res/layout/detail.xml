@@ -13,7 +13,7 @@
         ptr:ptrMode="both" >
 
         <RelativeLayout
-            android:id="@+id/slide_container_rl"
+            android:id="@+id/order_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20.0dip"
